@@ -1,0 +1,37 @@
+name: Publish Cypress Reports to GitHub Pages
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  build-and-upload:
+    name: Run tests and upload reports
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run CI tests (generate reports)
+        run: npm run test:ci
+
+      - name: Upload reports for Pages
+        uses: actions/upload-pages-artifact@v1
+        with:
+          path: cypress/reports/html
+
+  deploy:
+    name: Deploy to GitHub Pages
+    needs: build-and-upload
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy artifact to Pages
+        uses: actions/deploy-pages@v1
