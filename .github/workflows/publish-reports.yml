@@ -23,15 +23,22 @@ jobs:
       - name: Run CI tests (generate reports)
         run: npm run test:ci
 
-      - name: Upload reports for Pages
-        uses: actions/upload-pages-artifact@v1
+      - name: Upload reports as artifact (backup)
+        uses: actions/upload-artifact@v4
         with:
+          name: cypress-reports-html
           path: cypress/reports/html
 
   deploy:
-    name: Deploy to GitHub Pages
+    name: Deploy to GitHub Pages (gh-pages branch)
     needs: build-and-upload
     runs-on: ubuntu-latest
     steps:
-      - name: Deploy artifact to Pages
-        uses: actions/deploy-pages@v1
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Deploy to gh-pages branch
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./cypress/reports/html
