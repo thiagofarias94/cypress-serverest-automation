@@ -1,0 +1,15 @@
+{
+  "name": "cypress-serverest-automation",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "cy:open": "cypress open",
+    "cy:run": "cypress run",
+    "test:e2e": "cypress run --browser electron",
+    "test:ci": "cypress run --browser electron --reporter cypress-mochawesome-reporter --reporter-options \"reportDir=cypress/reports,overwrite=false,html=true,json=true\""
+  },
+  "devDependencies": {
+    "cypress": "^13.16.0",
+    "cypress-mochawesome-reporter": "^3.3.0"
+  }
+}
