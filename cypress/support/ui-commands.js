@@ -1,10 +1,14 @@
 /* UI helper commands */
+const LoginPage = require('./pages/LoginPage');
+
 Cypress.Commands.add('loginSession', (user) => {
   cy.session([user.email, user.password], () => {
-    cy.visit('/login');
-    cy.get('input[data-testid="email"]').clear().type(user.email);
-    cy.get('input[data-testid="senha"]').clear().type(user.password);
-    cy.get('button[data-testid="entrar"]').click();
-    cy.url().should('include', '/home');
+    LoginPage.visit().fill(user).submit();
+    cy.location('pathname', { timeout: Cypress.config('defaultCommandTimeout') * 2 }).should('include', '/home');
+  });
+
+  cy.visit('/home');
+  cy.get('body', { timeout: Cypress.config('defaultCommandTimeout') * 2 }).should(($body) => {
+    expect($body.text()).to.match(/Produtos|Lista|Carrinho/i);
   });
 });

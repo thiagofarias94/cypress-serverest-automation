@@ -2,14 +2,8 @@ describe('API - ServeRest', () => {
   const apiBaseUrl = Cypress.env('apiBaseUrl');
   const { buildUser } = require('../../support/factories/user');
 
-  afterEach(function () {
-    // Attempt to cleanup created user if set on test context
-    if (this.currentTest && this.currentTest.ctx && this.currentTest.ctx.createdUser) {
-      const created = this.currentTest.ctx.createdUser;
-      if (created.id && created.token) {
-        cy.apiDeleteUser(created.id, created.token);
-      }
-    }
+  afterEach(() => {
+    cy.cleanupCreatedUsers();
   });
 
   it('cria um usuário com sucesso', () => {
@@ -18,13 +12,13 @@ describe('API - ServeRest', () => {
     cy.apiCreateUser(user).then((response) => {
       expect(response.status).to.eq(201);
       expect(response.body.message).to.include('Cadastro realizado com sucesso');
-      // Save created user for teardown
+
       cy.apiLogin({ email: user.email, password: user.password }).then((login) => {
         const token = login.body.authorization || login.body.token;
-        // Some responses include usuario object
-        const userId = response.body._id || (login.body._id || (login.body.usuario && login.body.usuario._id));
+        const userId = response.body._id || login.body._id || (login.body.usuario && login.body.usuario._id);
+
         if (userId && token) {
-          cy.wrap({ id: userId, token }).as('createdUser');
+          cy.registerCreatedUser(userId, token);
         }
       });
     });
@@ -33,11 +27,20 @@ describe('API - ServeRest', () => {
   it('realiza login e devolve um token válido', () => {
     const user = buildUser();
 
-    cy.apiCreateUser(user).then(() => {
+    cy.apiCreateUser(user).then((createResponse) => {
+      expect(createResponse.status).to.eq(201);
+
       cy.apiLogin({ email: user.email, password: user.password }).then((response) => {
         expect(response.status).to.eq(200);
         expect(response.body.message).to.include('Login realizado com sucesso');
         expect(response.body.authorization || response.body.token).to.be.a('string').and.not.be.empty;
+
+        const token = response.body.authorization || response.body.token;
+        const userId = createResponse.body._id || response.body._id || (response.body.usuario && response.body.usuario._id);
+
+        if (userId && token) {
+          cy.registerCreatedUser(userId, token);
+        }
       });
     });
   });
@@ -45,9 +48,16 @@ describe('API - ServeRest', () => {
   it('cria um carrinho e cancela a compra para um usuário autenticado', () => {
     const user = buildUser();
 
-    cy.apiCreateUser(user).then(() => {
+    cy.apiCreateUser(user).then((createResponse) => {
+      expect(createResponse.status).to.eq(201);
+
       cy.apiLogin({ email: user.email, password: user.password }).then((loginResponse) => {
         const token = loginResponse.body.authorization || loginResponse.body.token;
+        const userId = createResponse.body._id || loginResponse.body._id || (loginResponse.body.usuario && loginResponse.body.usuario._id);
+
+        if (userId && token) {
+          cy.registerCreatedUser(userId, token);
+        }
 
         cy.request(`${apiBaseUrl}/produtos`).then((productsResponse) => {
           const availableProduct = productsResponse.body.produtos.find((product) => product.quantidade > 0);
@@ -63,6 +73,45 @@ describe('API - ServeRest', () => {
             });
           });
         });
+      });
+    });
+  });
+
+  it('retorna erro ao cadastrar um usuário com e-mail duplicado', () => {
+    const user = buildUser();
+
+    cy.apiCreateUser(user).then((firstResponse) => {
+      expect(firstResponse.status).to.eq(201);
+
+      cy.apiCreateUser(user).then((duplicateResponse) => {
+        expect(duplicateResponse.status).to.be.oneOf([400, 409]);
+        expect(duplicateResponse.body.message).to.match(/email|usuário|já está/i);
+      });
+    });
+  });
+
+  it('retorna erro ao tentar fazer login com senha incorreta', () => {
+    const user = buildUser();
+
+    cy.apiCreateUser(user).then((createResponse) => {
+      expect(createResponse.status).to.eq(201);
+
+      cy.apiLogin({ email: user.email, password: 'senha-errada' }).then((response) => {
+        expect(response.status).to.be.oneOf([400, 401]);
+        expect(response.body.message).to.match(/senha|email|usuário/i);
+      });
+    });
+  });
+
+  it('retorna erro ao criar um carrinho sem token de autenticação', () => {
+    const user = buildUser();
+
+    cy.apiCreateUser(user).then((createResponse) => {
+      expect(createResponse.status).to.eq(201);
+
+      cy.apiCreateCart({ produtos: [] }, '').then((response) => {
+        expect(response.status).to.be.oneOf([400, 401]);
+        expect(response.body.message).to.match(/token|autoriz|login|usuário/i);
       });
     });
   });

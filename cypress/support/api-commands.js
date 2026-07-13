@@ -47,7 +47,6 @@ Cypress.Commands.add('apiCancelCart', (token) => {
   });
 });
 
-// track created users for teardown
 Cypress.Commands.add('registerCreatedUser', (id, token) => {
   const list = Cypress.env('createdUsers') || [];
   list.push({ id, token });
@@ -56,8 +55,10 @@ Cypress.Commands.add('registerCreatedUser', (id, token) => {
 
 Cypress.Commands.add('cleanupCreatedUsers', () => {
   const list = Cypress.env('createdUsers') || [];
-  list.forEach((u) => {
-    cy.apiDeleteUser(u.id, u.token);
+
+  list.forEach((user) => {
+    cy.apiDeleteUser(user.id, user.token);
   });
+
   Cypress.env('createdUsers', []);
 });

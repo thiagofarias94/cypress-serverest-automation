@@ -11,8 +11,4 @@ module.exports = {
       overrides
     );
   },
-  fromFixture: (fixtureName = 'user') => {
-    const fixture = require(`../../fixtures/${fixtureName}.json`);
-    return Object.assign({}, fixture);
-  },
 };

@@ -13,14 +13,14 @@ describe('Frontend E2E - ServeRest', () => {
     const user = buildUser();
     RegisterPage.visit().fill(user).submit().expectSuccess();
 
-    LoginPage.visit().fill(user).submit();
-
+    cy.loginSession(user);
+    cy.visit('/home');
     ProductsPage.expectProductsVisible();
   });
 
   it('bloqueia login com credenciais inválidas', () => {
     const user = buildUser();
-    LoginPage.visit().fill({ ...user, password: 'senha-errada' }).submit();
+    LoginPage.visit().fill(Object.assign({}, user, { password: 'senha-errada' })).submit();
 
     LoginPage.expectInvalidCredentials();
   });
