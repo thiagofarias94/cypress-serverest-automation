@@ -22,6 +22,11 @@ npm run test:ci
 
 Os relatórios ficam em `cypress/reports/` e o HTML publicado pelo workflow pode ser acessado na página do GitHub Pages do repositório.
 
+## GitHub Pages
+O relatório HTML gerado pelo workflow é publicado em:
+
+https://thiagofarias94.github.io/cypress-serverest-automation/
+
 ## Relatórios e Checks
 - O workflow publica os artefatos de execução em cada run: `reports`, `screenshots` e `videos`
 - O status dos checks do GitHub Actions aparece na aba de Actions do repositório
