@@ -1,4 +1,13 @@
 class RegisterPage {
+  selectors = {
+    name: 'input[placeholder="Digite seu nome"]',
+    email: 'input[placeholder="Digite seu email"]',
+    password: 'input[placeholder="Digite sua senha"]',
+    adminCheckbox: 'input[type="checkbox"]',
+    submitBtn: 'button:contains("Cadastrar")',
+    successMsg: 'Cadastro realizado com sucesso',
+  };
+
   visit() {
     cy.visit('/login');
     cy.contains('a', 'Cadastre-se').click();
@@ -7,12 +16,12 @@ class RegisterPage {
   }
 
   fill(user) {
-    cy.get('input[placeholder="Digite seu nome"]').clear().type(user.name);
-    cy.get('input[placeholder="Digite seu email"]').clear().type(user.email);
-    cy.get('input[placeholder="Digite sua senha"]').clear().type(user.password);
+    cy.get(this.selectors.name).clear().type(user.nome || user.name);
+    cy.get(this.selectors.email).clear().type(user.email);
+    cy.get(this.selectors.password).clear().type(user.password || user.senha);
 
-    if (user.administrator) {
-      cy.contains('label', 'Administrador').click();
+    if (user.administrador === 'true' || user.administrator) {
+      cy.get(this.selectors.adminCheckbox).check({ force: true });
     }
 
     return this;
@@ -24,7 +33,7 @@ class RegisterPage {
   }
 
   expectSuccess() {
-    cy.contains('Cadastro realizado com sucesso', { timeout: 10000 }).should('be.visible');
+    cy.contains(this.selectors.successMsg, { timeout: Cypress.config('defaultCommandTimeout') }).should('be.visible');
     return this;
   }
 }

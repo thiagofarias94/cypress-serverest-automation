@@ -1,14 +1,9 @@
 const RegisterPage = require('../../support/pages/RegisterPage');
 const LoginPage = require('../../support/pages/LoginPage');
 const ProductsPage = require('../../support/pages/ProductsPage');
+const { buildUser } = require('../../support/factories/user');
 
 describe('Frontend E2E - ServeRest', () => {
-  const buildUser = () => ({
-    name: 'Usuário Cypress',
-    email: `cypress.ui.${Date.now()}@mail.com`,
-    password: '123456',
-  });
-
   it('cadastra um novo usuário com sucesso', () => {
     const user = buildUser();
     RegisterPage.visit().fill(user).submit().expectSuccess();

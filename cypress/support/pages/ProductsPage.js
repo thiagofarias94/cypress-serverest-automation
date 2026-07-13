@@ -1,6 +1,10 @@
 class ProductsPage {
+  selectors = {
+    heading: 'Produtos',
+  };
+
   expectProductsVisible() {
-    cy.contains('Produtos', { timeout: 10000 }).should('be.visible');
+    cy.contains(this.selectors.heading, { timeout: Cypress.config('defaultCommandTimeout') }).should('be.visible');
     return this;
   }
 }
