@@ -4,6 +4,10 @@ on:
   push:
     branches: [ main ]
 
+permissions:
+  contents: write
+  pages: write
+
 jobs:
   build-and-upload:
     name: Run tests and upload reports
@@ -33,6 +37,8 @@ jobs:
     name: Deploy to GitHub Pages (gh-pages branch)
     needs: build-and-upload
     runs-on: ubuntu-latest
+    env:
+      ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: 'true'
     steps:
       - name: Checkout
         uses: actions/checkout@v4
